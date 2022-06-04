@@ -1,4 +1,4 @@
-from pnl import CurveData, DataDimension, delta_pnl
+from pnl import CurveData, DataDimension, calculate_delta_pnl
 import pytest
 import xarray as xr
 
@@ -16,7 +16,7 @@ def test_delta_pnl():
     delta_risk = CurveData(data)
     data = xr.DataArray(data=[[1]], dims=[DataDimension.CURVE, DataDimension.MDR])
     rates_moves = CurveData(data)
-    result = delta_pnl(delta_risk, rates_moves)
+    result = calculate_delta_pnl(delta_risk, rates_moves)
     assert result.data.shape == (1, 1)
     assert result.data.dims == (DataDimension.CURVE, DataDimension.MDR)
     assert result.data.data[0, 0] == 10_000

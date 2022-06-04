@@ -59,6 +59,6 @@ class CurveData:
 def query(query: Query) -> QueryResult:
     raise NotImplementedError
 
-def delta_pnl(delta_risk: CurveData, rates_moves: CurveData) -> CurveData:
+def calculate_delta_pnl(delta_risk: CurveData, rates_moves: CurveData) -> CurveData:
     return delta_risk * rates_moves * 10_000
 
