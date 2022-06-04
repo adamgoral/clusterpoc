@@ -19,51 +19,46 @@ class QueryResult:
     data: xr.Dataset
 
 @unique
-class RiskDimensions(str, Enum):
+class DataDimension(str, Enum):
     BOOK = "book"
     CURVE = "curve"
+    MATURITY = 'mtty'
     MDR = "mdr"
-
-@dataclass
-class CurveRates:
-    data: xr.DataArray
 
 
 @dataclass
 class CurveData:
-    
     data: xr.DataArray
 
     def __init__(self, data: xr.DataArray) -> None:
-        assert RiskDimensions.CURVE in data.dims, "data must have dimension 'curve'"
-        assert RiskDimensions.BOOK in data.dims, "data must have dimension 'book'"
-        assert RiskDimensions.MDR in data.dims, "data must have dimension 'mdr'"
+        assert DataDimension.CURVE in data.dims, "data must have dimension 'curve'"
+        assert DataDimension.MDR in data.dims, "data must have dimension 'mdr'"
         self.data = data
+
 
     @property
     def curves(self) -> List:
         """
         Returns the list of curves.
         """
-        return self.data.dims[RiskDimensions.CURVE]
+        return self.data.coords[DataDimension.CURVE]
 
     @property
     def mdrs(self) -> List:
         """
         Returns the list of mdrs.
         """
-        return self.data.dims[RiskDimensions.MDR]
+        return self.data.coords[DataDimension.MDR]
 
-    @property
-    def books(self) -> List:
-        """
-        Returns the list of books.
-        """
-        return self.data.dims[RiskDimensions.BOOK]
+    def __mul__(self, other) -> 'CurveData':
+        if type(other) is CurveData:
+            return CurveData(self.data * other.data)
+        
+        return CurveData(self.data * other)
 
 def query(query: Query) -> QueryResult:
     raise NotImplementedError
 
+def delta_pnl(delta_risk: CurveData, rates_moves: CurveData) -> CurveData:
+    return delta_risk * rates_moves * 10_000
 
-def delta_pnl(risk: CurveData, rate_moves: CurveRates) -> CurveData:
-    return CurveData(risk.data * rate_moves.data)
